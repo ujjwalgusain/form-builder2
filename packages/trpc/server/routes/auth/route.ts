@@ -8,6 +8,12 @@ import { generatePath } from "../../utils/path-generator";
 import { email } from "zod";
 const getPath = generatePath("/authentication");
 const TAGS = ["Authentication"]
+const authCookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV !== "development",
+    sameSite: process.env.NODE_ENV === "development" ? "lax" : "none",
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+} as const;
 
 export const authRouter = router({
     createUserWithEmailAndPassword: publicProcedure.meta({
@@ -25,13 +31,7 @@ export const authRouter = router({
             password,
         });
 
-        ctx.setCookie("token", token, {
-            httpOnly: true,
-            secure: false,
-            sameSite: "strict",
-            maxAge: 30 * 24 * 60 * 1000,
-
-        });
+        ctx.setCookie("token", token, authCookieOptions);
 
         return {
             id
@@ -52,13 +52,7 @@ export const authRouter = router({
             password,
         });
 
-        ctx.setCookie("token", token, {
-            httpOnly: true,
-            secure: false,
-            sameSite: "strict",
-            maxAge: 30 * 24 * 60 * 1000,
-
-        });
+        ctx.setCookie("token", token, authCookieOptions);
 
         return {
             id
