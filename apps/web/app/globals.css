@@ -117,7 +117,81 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    scroll-behavior: smooth;
+  }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .city-shell {
+    background:
+      radial-gradient(circle at 18% 12%, rgba(108, 194, 231, 0.24), transparent 28%),
+      linear-gradient(135deg, #061627 0%, #082842 46%, #6cbfe6 100%);
+  }
+
+  .city-panel {
+    @apply border border-sky-100/20 bg-slate-950/70 text-white shadow-2xl shadow-sky-950/30 backdrop-blur;
+  }
+
+  .city-card {
+    @apply border border-sky-100/20 bg-white/10 text-white shadow-lg shadow-sky-950/20 backdrop-blur transition duration-300 ease-out hover:-translate-y-0.5 hover:border-sky-200/50 hover:bg-white/15;
+  }
+
+  .city-input {
+    @apply border-sky-100/25 bg-slate-950/55 text-white placeholder:text-sky-100/45 focus-visible:border-sky-200 focus-visible:ring-sky-200/40;
+  }
+
+  .city-button {
+    @apply bg-sky-200 text-slate-950 shadow-lg shadow-sky-950/25 transition duration-300 hover:-translate-y-0.5 hover:bg-white focus-visible:ring-sky-200/60;
+  }
+
+  .city-outline-button {
+    @apply border-sky-100/25 bg-white/10 text-white transition duration-300 hover:-translate-y-0.5 hover:border-sky-200/60 hover:bg-sky-100/15 focus-visible:ring-sky-200/60;
+  }
+
+  .animate-city-in {
+    animation: city-in 520ms ease-out both;
+  }
+
+  .animate-city-rise {
+    animation: city-rise 640ms ease-out both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-city-in,
+    .animate-city-rise {
+      animation: none;
+    }
+
+    .city-card,
+    .city-button,
+    .city-outline-button {
+      transition: none;
+    }
+  }
+}
+
+@keyframes city-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes city-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

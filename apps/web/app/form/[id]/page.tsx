@@ -4,6 +4,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { useParams } from "next/navigation";
+import { CheckCircle2, Send } from "lucide-react";
 
 import { useGetFormWithFields } from "~/hooks/api/form";
 import { useCreateSubmission } from "~/hooks/api/form-submission";
@@ -28,12 +29,12 @@ export default function PublicFormPage() {
         setValues(initial);
     }, [form?.fields]);
 
-    const handleChange = (fieldId: string, v: string) => {
-        setValues((s) => ({ ...s, [fieldId]: v }));
+    const handleChange = (fieldId: string, value: string) => {
+        setValues((state) => ({ ...state, [fieldId]: value }));
     };
 
-    const handleSubmit = async (e: FormEvent) => {
-        e.preventDefault();
+    const handleSubmit = async (event: FormEvent) => {
+        event.preventDefault();
         if (!formId) return;
 
         const payload = {
@@ -43,69 +44,125 @@ export default function PublicFormPage() {
 
         await createSubmissionAsync(payload);
         setSubmitted(true);
-        // optional: clear values
-        setValues((s) => Object.fromEntries(Object.keys(s).map((k) => [k, ""])));
+        setValues((state) => Object.fromEntries(Object.keys(state).map((key) => [key, ""])));
     };
 
-    if (isLoading) return <div className="p-6">Loading form…</div>;
-    if (!form) return <div className="p-6">Form not found.</div>;
+    if (isLoading) {
+        return (
+            <main className="city-shell flex min-h-screen items-center justify-center p-6 text-white">
+                <div className="city-panel animate-city-in rounded-lg p-6 text-sm text-sky-50/75">
+                    Loading form...
+                </div>
+            </main>
+        );
+    }
+
+    if (!form) {
+        return (
+            <main className="city-shell flex min-h-screen items-center justify-center p-6 text-white">
+                <div className="city-panel animate-city-in rounded-lg p-6 text-sm text-sky-50/75">
+                    Form not found.
+                </div>
+            </main>
+        );
+    }
 
     return (
-        <main className="min-h-screen bg-black text-white px-6 py-6">
+        <main className="city-shell min-h-screen px-6 py-10 text-white">
             <div className="mx-auto max-w-2xl">
-                <h1 className="text-2xl font-semibold mb-2">{form.title}</h1>
-                {form.description ? <p className="text-white/60 mb-6">{form.description}</p> : null}
+                <section className="animate-city-in mb-6">
+                    <p className="text-sm font-medium uppercase tracking-[0.18em] text-sky-100/80">
+                        Public form
+                    </p>
+                    <h1 className="mt-2 text-3xl font-semibold tracking-tight">{form.title}</h1>
+                    {form.description ? (
+                        <p className="mt-3 text-sm leading-6 text-sky-50/75">
+                            {form.description}
+                        </p>
+                    ) : null}
+                </section>
 
                 {submitted ? (
-                    <div className="mb-6 rounded-md bg-white/5 p-4 text-white/80">
-                        Thanks — your submission was received.
+                    <div className="city-card animate-city-rise mb-6 flex items-center gap-3 rounded-lg p-4 text-sky-50">
+                        <CheckCircle2 className="size-5 text-emerald-300" aria-hidden="true" />
+                        Thanks, your submission was received.
                     </div>
                 ) : null}
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    {form.fields.map((f) => (
-                        <div key={f.id} className="space-y-1">
-                            <label className="block text-sm text-white/80">{f.label}</label>
-                            {f.type === "TEXT" && (
+                <form
+                    onSubmit={handleSubmit}
+                    className="city-panel animate-city-rise space-y-5 rounded-lg p-6"
+                >
+                    {form.fields.map((field) => (
+                        <div key={field.id} className="space-y-1">
+                            <label className="block text-sm font-medium text-sky-50">
+                                {field.label}
+                                {field.isRequired ? (
+                                    <span className="ml-1 text-sky-100" aria-label="required">
+                                        *
+                                    </span>
+                                ) : null}
+                            </label>
+
+                            {field.type === "TEXT" && (
                                 <Input
-                                    value={values[f.id] ?? ""}
-                                    onChange={(e) => handleChange(f.id, e.target.value)}
-                                    placeholder={f.placeholder ?? ""}
+                                    value={values[field.id] ?? ""}
+                                    onChange={(event) =>
+                                        handleChange(field.id, event.target.value)
+                                    }
+                                    placeholder={field.placeholder ?? ""}
+                                    required={Boolean(field.isRequired)}
+                                    className="city-input"
                                 />
                             )}
 
-                            {f.type === "NUMBER" && (
+                            {field.type === "NUMBER" && (
                                 <Input
                                     type="number"
-                                    value={values[f.id] ?? ""}
-                                    onChange={(e) => handleChange(f.id, e.target.value)}
-                                    placeholder={f.placeholder ?? ""}
+                                    value={values[field.id] ?? ""}
+                                    onChange={(event) =>
+                                        handleChange(field.id, event.target.value)
+                                    }
+                                    placeholder={field.placeholder ?? ""}
+                                    required={Boolean(field.isRequired)}
+                                    className="city-input"
                                 />
                             )}
 
-                            {f.type === "EMAIL" && (
+                            {field.type === "EMAIL" && (
                                 <Input
                                     type="email"
-                                    value={values[f.id] ?? ""}
-                                    onChange={(e) => handleChange(f.id, e.target.value)}
-                                    placeholder={f.placeholder ?? ""}
+                                    value={values[field.id] ?? ""}
+                                    onChange={(event) =>
+                                        handleChange(field.id, event.target.value)
+                                    }
+                                    placeholder={field.placeholder ?? ""}
+                                    required={Boolean(field.isRequired)}
+                                    className="city-input"
                                 />
                             )}
 
-                            {f.type === "PASSWORD" && (
+                            {field.type === "PASSWORD" && (
                                 <Input
                                     type="password"
-                                    value={values[f.id] ?? ""}
-                                    onChange={(e) => handleChange(f.id, e.target.value)}
-                                    placeholder={f.placeholder ?? ""}
+                                    value={values[field.id] ?? ""}
+                                    onChange={(event) =>
+                                        handleChange(field.id, event.target.value)
+                                    }
+                                    placeholder={field.placeholder ?? ""}
+                                    required={Boolean(field.isRequired)}
+                                    className="city-input"
                                 />
                             )}
 
-                            {f.type === "YES_NO" && (
+                            {field.type === "YES_NO" && (
                                 <select
-                                    value={values[f.id] ?? ""}
-                                    onChange={(e) => handleChange(f.id, e.target.value)}
-                                    className="w-full rounded-md border bg-transparent px-3 py-2 text-sm text-white"
+                                    value={values[field.id] ?? ""}
+                                    onChange={(event) =>
+                                        handleChange(field.id, event.target.value)
+                                    }
+                                    required={Boolean(field.isRequired)}
+                                    className="city-input w-full rounded-md border px-3 py-2 text-sm"
                                 >
                                     <option value="">Select...</option>
                                     <option value="true">Yes</option>
@@ -113,20 +170,21 @@ export default function PublicFormPage() {
                                 </select>
                             )}
 
-                            {f.description ? (
-                                <div className="text-sm text-white/60">{f.description}</div>
+                            {field.description ? (
+                                <div className="text-sm text-sky-50/70">{field.description}</div>
                             ) : null}
                         </div>
                     ))}
 
-                    {error ? <div className="text-sm text-red-400">{error.message}</div> : null}
+                    {error ? <div className="text-sm text-red-300">{error.message}</div> : null}
 
-                    <div>
+                    <div className="pt-1">
                         <Button
                             type="submit"
                             disabled={status === "pending"}
-                            className="bg-white text-black"
+                            className="city-button w-full sm:w-auto"
                         >
+                            <Send className="size-4" aria-hidden="true" />
                             {status === "pending" ? "Submitting..." : "Submit"}
                         </Button>
                     </div>

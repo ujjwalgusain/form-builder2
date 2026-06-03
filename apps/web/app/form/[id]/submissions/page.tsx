@@ -4,6 +4,8 @@
 
 import { useMemo } from "react";
 import { useParams } from "next/navigation";
+import { ClipboardList, Database } from "lucide-react";
+
 import { useGetSubmissionsByFormId } from "~/hooks/api/form-submission";
 import { useGetFields } from "~/hooks/api/form-field";
 
@@ -23,78 +25,121 @@ export default function FormSubmissions() {
     const { fields, isLoading: fieldsLoading } = useGetFields(formId ?? "");
 
     const rows = useMemo(() => (submissions ?? []) as Submission[], [submissions]);
+    const sortedFields = useMemo(
+        () => (fields ?? []).slice().sort((a, b) => parseFloat(a.index) - parseFloat(b.index)),
+        [fields],
+    );
 
     const loading = subsLoading || fieldsLoading;
 
-    if (loading) return <div className="p-6">Loading submissions…</div>;
-    if (error) return <div className="p-6 text-red-400">Error loading submissions</div>;
+    if (loading) {
+        return (
+            <main className="city-shell flex min-h-screen items-center justify-center p-6 text-white">
+                <div className="city-panel animate-city-in rounded-lg p-6 text-sm text-sky-50/75">
+                    Loading submissions...
+                </div>
+            </main>
+        );
+    }
+
+    if (error) {
+        return (
+            <main className="city-shell flex min-h-screen items-center justify-center p-6 text-white">
+                <div className="city-panel animate-city-in rounded-lg p-6 text-sm text-red-300">
+                    Error loading submissions.
+                </div>
+            </main>
+        );
+    }
 
     return (
-        <main className="min-h-screen bg-slate-50 p-6">
-            <div className="mx-auto max-w-5xl bg-white rounded-md shadow-sm p-6">
-                <h2 className="text-lg font-semibold mb-4 text-slate-900">Submissions</h2>
-
-                <div className="mb-4 text-sm text-slate-600">Total: {rows.length}</div>
-
-                {/* determine ordered fields to render as columns */}
-                {fields && fields.length > 0 && (
-                    <div className="mb-4 text-xs text-slate-600">
-                        Fields: {fields.map((f) => f.label).join(", ")}
+        <main className="city-shell min-h-screen p-6 text-white">
+            <div className="mx-auto max-w-6xl">
+                <section className="animate-city-in mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                        <p className="text-sm font-medium uppercase tracking-[0.18em] text-sky-100/80">
+                            Match report
+                        </p>
+                        <h1 className="mt-2 text-3xl font-semibold tracking-tight">
+                            Submissions
+                        </h1>
+                        <p className="mt-2 text-sm leading-6 text-sky-50/75">
+                            Review responses in field order, with newest database records available
+                            at a glance.
+                        </p>
                     </div>
-                )}
+
+                    <div className="city-panel rounded-lg px-4 py-3 text-sm">
+                        Total: <span className="font-semibold text-sky-100">{rows.length}</span>
+                    </div>
+                </section>
+
+                {sortedFields.length > 0 ? (
+                    <div className="city-card animate-city-rise mb-4 rounded-lg p-4 text-xs text-sky-50/75">
+                        Fields: {sortedFields.map((field) => field.label).join(", ")}
+                    </div>
+                ) : null}
 
                 {rows.length === 0 ? (
-                    <div className="rounded-md bg-white p-4 border">No submissions yet.</div>
+                    <div className="city-card animate-city-rise rounded-lg p-8 text-center text-sm text-sky-50/75">
+                        <ClipboardList className="mx-auto mb-3 size-8 text-sky-100" aria-hidden="true" />
+                        No submissions yet.
+                    </div>
                 ) : (
-                    <div className="overflow-auto rounded-md border">
-                        <table className="min-w-full table-fixed text-sm">
-                            <thead className="bg-slate-900 text-left text-white">
-                                <tr>
-                                    <th className="px-4 py-2 w-1/6">ID</th>
-                                    <th className="px-4 py-2 w-1/6">Submitted</th>
-                                    {/** render a column per field in index order */}
-                                    {(fields ?? [])
-                                        .slice()
-                                        .sort((a, b) => parseFloat(a.index) - parseFloat(b.index))
-                                        .map((f) => (
-                                            <th key={f.id} className="px-4 py-2 text-left text-sm">
-                                                {f.label}
+                    <div className="city-panel animate-city-rise overflow-hidden rounded-lg">
+                        <div className="overflow-auto">
+                            <table className="min-w-full table-fixed text-sm">
+                                <thead className="bg-slate-950/80 text-left text-sky-50">
+                                    <tr>
+                                        <th className="w-52 px-4 py-3 font-semibold">ID</th>
+                                        <th className="w-44 px-4 py-3 font-semibold">Submitted</th>
+                                        {sortedFields.map((field) => (
+                                            <th key={field.id} className="px-4 py-3 font-semibold">
+                                                {field.label}
                                             </th>
                                         ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {rows.map((r) => (
-                                    <tr key={r.id} className="odd:bg-white even:bg-slate-100">
-                                        <td className="px-4 py-3 align-top break-all text-xs text-slate-800">
-                                            {r.id}
-                                        </td>
-                                        <td className="px-4 py-3 align-top text-xs text-slate-600">
-                                            {r.createdAt
-                                                ? new Date(r.createdAt).toLocaleString()
-                                                : "-"}
-                                        </td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {rows.map((row) => (
+                                        <tr
+                                            key={row.id}
+                                            className="border-t border-sky-100/10 odd:bg-white/5 even:bg-sky-100/10"
+                                        >
+                                            <td className="px-4 py-3 align-top text-xs text-sky-50/75">
+                                                <div className="flex items-start gap-2">
+                                                    <Database
+                                                        className="mt-0.5 size-3.5 shrink-0 text-sky-100"
+                                                        aria-hidden="true"
+                                                    />
+                                                    <span className="break-all">{row.id}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-4 py-3 align-top text-xs text-sky-50/70">
+                                                {row.createdAt
+                                                    ? new Date(row.createdAt).toLocaleString()
+                                                    : "-"}
+                                            </td>
 
-                                        {(fields ?? [])
-                                            .slice()
-                                            .sort(
-                                                (a, b) => parseFloat(a.index) - parseFloat(b.index),
-                                            )
-                                            .map((f) => {
-                                                const v = r.values?.find((x) => x.fieldId === f.id);
+                                            {sortedFields.map((field) => {
+                                                const value = row.values?.find(
+                                                    (item) => item.fieldId === field.id,
+                                                );
+
                                                 return (
                                                     <td
-                                                        key={f.id}
-                                                        className="px-4 py-3 align-top text-xs text-slate-700"
+                                                        key={field.id}
+                                                        className="px-4 py-3 align-top text-xs text-sky-50/85"
                                                     >
-                                                        {v ? v.value : "-"}
+                                                        {value?.value || "-"}
                                                     </td>
                                                 );
                                             })}
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 )}
             </div>
